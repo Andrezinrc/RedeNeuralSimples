@@ -19,7 +19,7 @@ double derivadaSigmoide(double x) {
 
 class RedeNeural {
 private:
-    double peso1, peso2, vies;
+    double peso1, peso2, pesoOculto1, pesoOculto2, vies, viesOculto;
     double taxaAprendizado;
 
 public:
@@ -27,43 +27,59 @@ public:
         srand(time(0));
         peso1 = ((double)rand() / RAND_MAX) * 2 - 1;
         peso2 = ((double)rand() / RAND_MAX) * 2 - 1;
+        pesoOculto1 = ((double)rand() / RAND_MAX) * 2 - 1;
+        pesoOculto2 = ((double)rand() / RAND_MAX) * 2 - 1;
         vies = ((double)rand() / RAND_MAX) * 2 - 1;
+        viesOculto = ((double)rand() / RAND_MAX) * 2 - 1;
         taxaAprendizado = 0.1;
         
         cout << "Pesos e vies iniciais: " << endl;
-        cout << "Peso1: " << peso1 << ", Peso2: " << peso2 << ", Viés: " << vies << endl;
+        cout << "Peso1: " << peso1 << ", Peso2: " << peso2 << ", PesoOculto1: " << pesoOculto1 
+             << ", PesoOculto2: " << pesoOculto2 << ", Viés: " << vies << ", Viés Oculto: " << viesOculto << endl;
     }
 
     void treinar(vector<vector<double>> entradas, vector<double> saidas, int epocas) {
         for (int epoca = 0; epoca < epocas; epoca++) {
             for (size_t i = 0; i < entradas.size(); i++) {
                 //Propagacao para frente
-                double soma = entradas[i][0] * peso1 + entradas[i][1] * peso2 + vies;
-                double saida = sigmoide(soma);
+                double somaEntrada = entradas[i][0] * peso1 + entradas[i][1] * peso2 + vies;
+                double saidaEntrada = sigmoide(somaEntrada);
+
+                double somaOculta = saidaEntrada * pesoOculto1 + entradas[i][1] * pesoOculto2 + viesOculto;
+                double saidaOculta = sigmoide(somaOculta);
 
                 //Calculo do erro
-                double erro = saidas[i] - saida;
+                double erro = saidas[i] - saidaOculta;
 
                 //Backpropagation
-                double delta = erro * derivadaSigmoide(saida);
+                double deltaOculto = erro * derivadaSigmoide(saidaOculta);
+                double deltaEntrada = deltaOculto * derivadaSigmoide(saidaEntrada);
 
                 //ajuste dos pesos e vies
-                peso1 += taxaAprendizado * delta * entradas[i][0];
-                peso2 += taxaAprendizado * delta * entradas[i][1];
-                vies += taxaAprendizado * delta;
+                pesoOculto1 += taxaAprendizado * deltaOculto * saidaEntrada;
+                pesoOculto2 += taxaAprendizado * deltaOculto * entradas[i][1];
+                viesOculto += taxaAprendizado * deltaOculto;
 
-                //Imprime o progresso acada 10000 epoca
+                peso1 += taxaAprendizado * deltaEntrada * entradas[i][0];
+                peso2 += taxaAprendizado * deltaEntrada * entradas[i][1];
+                vies += taxaAprendizado * deltaEntrada;
+
+                //Imprime o progresso a cada 10000 epoca
                 if (epoca % 10000 == 0) {
                     cout << "Época: " << epoca << ", Erro: " << erro << endl;
-                    cout << "Peso1: " << peso1 << ", Peso2: " << peso2 << ", Viés: " << vies << endl;
+                    cout << "Peso1: " << peso1 << ", Peso2: " << peso2 << ", PesoOculto1: " << pesoOculto1 
+                         << ", PesoOculto2: " << pesoOculto2 << ", Viés: " << vies << ", Viés Oculto: " << viesOculto << endl;
                 }
             }
         }
     }
 
     double prever(double entrada1, double entrada2) {
-        double soma = entrada1 * peso1 + entrada2 * peso2 + vies;
-        return sigmoide(soma);
+        double somaEntrada = entrada1 * peso1 + entrada2 * peso2 + vies;
+        double saidaEntrada = sigmoide(somaEntrada);
+
+        double somaOculta = saidaEntrada * pesoOculto1 + entrada2 * pesoOculto2 + viesOculto;
+        return sigmoide(somaOculta);
     }
 
     string determinarLinguagem(double entrada1, double entrada2) {
