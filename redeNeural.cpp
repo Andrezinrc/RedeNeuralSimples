@@ -7,12 +7,9 @@
 using namespace std;
 
 
-//Sigmoide: usada para ativacao dos neuronios
 double sigmoide(double x) {
     return 1 / (1 + exp(-x));
 }
-
-//Derivada da sigmoide: usada para calcular o gradiente na retropropagação
 double derivadaSigmoide(double x) {
     return x * (1 - x);
 }
@@ -84,12 +81,12 @@ public:
 
     string determinarLinguagem(double entrada1, double entrada2) {
         double resultado = prever(entrada1, entrada2);
-        cout << "\033[1;33mResultado da previsao: " << resultado << " (C++ = 1, outra linguagem = 0)\033[0m" << endl;
+        cout << resultado << endl;
         
         if (resultado >= 0.5) {
-            return "\033[34mC++ é a melhor linguagem\033[0m\n";
+            return "\033[34mC++ venceu\033[0m\n";
         } else {
-            return "\033[31mA outra linguagem é melhor\033[0m\n";
+            return "\033[31mA outra linguagem venceu\033[0m\n";
         }
     }
 };
